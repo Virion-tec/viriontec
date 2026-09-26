@@ -1,0 +1,173 @@
+/* Virion Tec — Panel Administrador */
+
+:root {
+  --green: #22b514; --green-dark: #0a5c0a; --green-light: #e2ffd0;
+  --pink: #e0299f; --pink-dark: #8a0a68; --pink-light: #ffe1f5;
+  --blue: #1f6fe5; --blue-dark: #07306e; --blue-light: #dcecff;
+  --ink: #10131a; --muted: #6b7280; --line: #e6e8ee; --bg-soft: #f5f7fb;
+  --radius: 12px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-soft); color: var(--ink); }
+h1, h2, h3 { font-family: 'Sora', sans-serif; }
+
+/* ---- Login ---- */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(700px 400px at 80% 0%, var(--green-light), transparent 60%),
+              radial-gradient(600px 400px at 0% 100%, var(--pink-light), transparent 60%),
+              #fff;
+}
+.login-card {
+  width: 380px;
+  max-width: 90vw;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  box-shadow: 0 20px 50px rgba(16,19,26,.1);
+  padding: 34px 30px;
+  text-align: center;
+}
+.login-card img { width: 60px; margin-bottom: 12px; }
+.login-card p { color: var(--muted); font-size: .9rem; margin-bottom: 22px; }
+.field-admin { text-align: left; margin-bottom: 16px; }
+.field-admin label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 6px; }
+.field-admin input {
+  width: 100%; padding: 12px 14px; border-radius: 8px; border: 2px solid var(--line); font-size: 1rem;
+}
+.login-error { color: #c0273a; font-size: .85rem; margin-top: 6px; min-height: 18px; }
+.btn { border: none; border-radius: 999px; padding: 13px 22px; font-family: 'Sora', sans-serif; font-weight: 700; cursor: pointer; font-size: .95rem; }
+.btn-primary { background: linear-gradient(120deg, var(--blue), var(--green)); color: #fff; width: 100%; }
+.btn-ghost { background: transparent; border: 2px solid var(--line); color: var(--ink); }
+.btn-danger { background: #fdeceb; color: #b3271f; }
+.btn-sm { padding: 8px 14px; font-size: .82rem; }
+
+/* ---- Layout admin ---- */
+.admin-shell { display: none; min-height: 100vh; grid-template-columns: 240px 1fr; }
+.admin-shell.active { display: grid; }
+
+.admin-side {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  align-self: start;
+  background: var(--ink);
+  color: #d6d9e2;
+  padding: 26px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.admin-side .brand { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 700; margin-bottom: 26px; }
+.admin-side .brand img { width: 34px; }
+.admin-side button {
+  text-align: left;
+  background: none;
+  border: none;
+  color: #b7bcc9;
+  padding: 11px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: .92rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+.admin-side button.active, .admin-side button:hover { background: rgba(255,255,255,.08); color: #fff; }
+.admin-side .side-bottom { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+.admin-side .btn-ghost {color:#d6d9e2;border-color:#414857}
+
+.admin-main { height:100vh;padding: 34px 40px; overflow-y: auto; }
+.admin-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; }
+.admin-topbar h2 { margin: 0; }
+.admin-topbar p { color: var(--muted); margin: 4px 0 0; font-size: .9rem; }
+
+.panel-tab { display: none; }
+.panel-tab.active { display: block; }
+
+.admin-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin-bottom: 20px;
+}
+.admin-card h3 { margin-top: 0; font-size: 1.05rem; }
+.field-title,.admin-card > label {display:block;font-weight:800;font-size:.87rem;margin:12px 0 6px;color:var(--ink)}
+.admin-card input[type=url],.admin-card input:not([type=checkbox]) {width:100%;max-width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit}
+.admin-image-preview {display:block;width:min(100%,520px);max-height:280px;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:var(--bg-soft);margin-top:12px}
+.media-preview-box {height:230px;overflow:hidden}.media-preview-box img,.media-preview-box iframe {display:block;width:100%;height:100%;min-height:0;max-height:none;object-fit:contain;border:0;border-radius:inherit;background:#eef1f5}
+.combo-preview {height:125px}.admin-media-gallery {display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.admin-media-gallery .media-preview-box {width:100%;height:140px;margin:8px 0}
+.field-help {display:block;color:var(--muted);font-size:.78rem;line-height:1.45;margin:5px 0 8px}
+.combo-admin-heading {display:flex;justify-content:space-between;gap:12px;align-items:center;padding:4px 0 10px;border-bottom:1px solid var(--line)}
+.combo-admin-heading strong {font-family:'Sora',sans-serif;font-size:1rem;color:var(--ink)}.combo-admin-heading span {font-size:.82rem;color:var(--muted)}.combo-admin-heading a {color:var(--blue);font-weight:700}.copy-link-btn {border:0;background:var(--blue-light);color:var(--blue-dark);padding:6px 10px;border-radius:7px;font-weight:800;cursor:pointer;margin-left:6px}
+.combo-admin-status {display:flex;gap:20px;flex-wrap:wrap;padding:12px;background:#fff;border:1px solid var(--line);border-radius:8px}.combo-admin-status label {display:flex;align-items:center;gap:8px;font-weight:700;color:var(--ink)}.combo-preview {width:220px;height:125px;object-fit:cover}
+.admin-card h3 + .row-fields label,.table-row label,.area-editor > label {font-weight:800;color:var(--ink)}
+.admin-card .save-bar {position:static;border:0;padding:14px 0 0}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+  background: var(--bg-soft);
+}
+.table-row .row-fields { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.table-row .row-fields.full { grid-template-columns: 1fr; }
+.table-row label { font-size: .78rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 4px; }
+.table-row input, .table-row textarea, .table-row select {
+  width: 100%; padding: 9px 11px; border-radius: 6px; border: 1px solid var(--line); font-size: .9rem; font-family: inherit;
+}
+.table-row textarea { resize: vertical; min-height: 50px; }
+.area-editor textarea { width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit;min-height:90px;resize:vertical;margin:6px 0 14px }
+.area-editor .image-urls { min-height:130px }
+.area-editor small { color:var(--muted) }
+.row-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+
+.item-line { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+.item-line input { flex: 1; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); }
+.item-line button { background: #fdeceb; color: #b3271f; border: none; border-radius: 6px; width: 32px; height: 32px; cursor: pointer; }
+
+.save-bar {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--ink);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: .9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+  transform: translateY(10px);
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 800px) {
+  .admin-shell.active { grid-template-columns: 1fr; }
+  .admin-side { display: flex; flex-direction: row; align-items:center;height:auto;overflow-x: auto;position:sticky;top:0;z-index:100;padding:10px;white-space:nowrap }
+  .admin-side .brand { display:none }
+  .admin-side .side-bottom { display:flex;flex:0 0 auto;flex-direction:row;margin:0 0 0 auto;position:sticky;right:0;background:var(--ink);padding-left:8px }
+  .admin-side .side-bottom a,.admin-side .side-bottom #resetBtn {display:none}
+  .admin-main { height:auto;overflow:visible;padding:22px 16px }
+  .admin-topbar { align-items:flex-start;gap:14px;flex-wrap:wrap }
+  .table-row .row-fields { grid-template-columns:1fr }
+  .combo-admin-heading {align-items:flex-start;flex-direction:column}
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Administrador | Virion Tec</title>
+<link rel="icon" href="assets/logos/logo-viriontec.png">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <img src="assets/logos/logo-viriontec.png" alt="Virion Tec">
+    <h1>Panel Administrador</h1>
+    <p>Ingresa tus credenciales para editar combos, catálogo y precios.</p>
+    <div class="field-admin">
+      <label for="loginUser">Usuario</label>
+      <input type="text" id="loginUser" autocomplete="username">
+    </div>
+    <div class="field-admin">
+      <label for="loginPass">Contraseña</label>
+      <input type="password" id="loginPass" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" id="loginBtn">Ingresar</button>
+    <div class="login-error" id="loginError"></div>
+    <p style="margin-top:18px;"><a href="index.html" style="color:var(--muted);font-size:.85rem;">← Volver a la web</a></p>
+  </div>
+</div>
+
+<!-- ===================== PANEL ===================== -->
+<div class="admin-shell" id="adminShell">
+  <aside class="admin-side">
+    <div class="brand"><img src="assets/logos/logo-viriontec.png" alt="Virion Tec">Virion Tec</div>
+    <button class="tab-btn active" data-tab="combos">🛒 Combos</button>
+    <button class="tab-btn" data-tab="catalogo">📋 Catálogo</button>
+    <button class="tab-btn" data-tab="areas">🎨 Áreas e imágenes</button>
+    <button class="tab-btn" data-tab="general">🖼️ Contenido general</button>
+    <button class="tab-btn" data-tab="seguridad">🔐 Usuario y contraseña</button>
+    <button class="tab-btn" data-tab="contacto">📞 Contacto y distritos</button>
+    <div class="side-bottom">
+      <a href="index.html" class="btn btn-ghost btn-sm" style="text-align:center;text-decoration:none;">Ver la web</a>
+      <button class="btn btn-danger btn-sm" id="resetBtn">Restaurar valores por defecto</button>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <!-- COMBOS -->
+    <section class="panel-tab active" id="tab-combos">
+      <div class="admin-topbar">
+        <div><h2>Combos y precios</h2><p>Estos son los paquetes que se muestran en la sección "Combos" de la web.</p></div>
+        <button class="btn btn-primary btn-sm" id="addComboBtn">+ Nuevo combo</button>
+      </div>
+      <div id="combosList"></div>
+      <div class="save-bar"><button class="btn btn-primary" id="saveCombos">Guardar cambios de combos</button></div>
+    </section>
+
+    <!-- CATÁLOGO -->
+    <section class="panel-tab" id="tab-catalogo">
+      <div class="admin-topbar">
+        <div><h2>Catálogo por área</h2><p>Estos servicios aparecen como casillas en "Arma tu paquete" y en el asistente de cotización.</p></div>
+      </div>
+      <div id="catalogoList"></div>
+      <div class="save-bar"><button class="btn btn-primary" id="saveCatalogo">Guardar cambios de catálogo</button></div>
+    </section>
+
+    <section class="panel-tab" id="tab-areas">
+      <div class="admin-topbar"><div><h2>Áreas, descripciones e imágenes</h2><p>Edita los textos y URLs que aparecen en las subpáginas de cada especialidad.</p></div></div>
+      <div id="areasList"></div>
+      <div class="save-bar"><button class="btn btn-primary" id="saveAreas">Guardar áreas e imágenes</button></div>
+    </section>
+
+    <section class="panel-tab" id="tab-general"><div class="admin-topbar"><div><h2>Contenido general</h2><p>Imágenes y recursos visuales que aparecen fuera de las áreas y combos.</p></div></div><div class="admin-card"><h3>Equipo Virion Tec</h3><label class="field-title" for="equipoImageUrl">Imagen del equipo · URL de imagen o enlace compartido de Drive/Canva</label><input id="equipoImageUrl" type="url" placeholder="https://..."><small class="field-help">Drive debe estar compartido con “Cualquier persona con el enlace”. En Canva, habilita el acceso público o la opción para incrustar.</small><div id="equipoImagePreview" class="admin-image-preview media-preview-box"></div><div class="save-bar"><button class="btn btn-primary" id="saveGeneral">Guardar contenido</button></div></div></section>
+
+    <section class="panel-tab" id="tab-seguridad"><div class="admin-topbar"><div><h2>Acceso al panel</h2><p>Actualiza las credenciales que usa este navegador.</p></div></div><div class="admin-card credential-card"><h3>Usuario y contraseña</h3><label class="field-title" for="adminUserInput">Nombre de usuario</label><input id="adminUserInput" type="text" autocomplete="username"><label class="field-title" for="adminPassInput">Nueva contraseña</label><input id="adminPassInput" type="password" autocomplete="new-password"><p>Este panel guarda el acceso en el navegador; no reemplaza una autenticación segura en un servidor.</p><button class="btn btn-primary" id="saveCredentials">Guardar credenciales</button></div></section>
+
+    <!-- CONTACTO -->
+    <section class="panel-tab" id="tab-contacto">
+      <div class="admin-topbar">
+        <div><h2>Datos de contacto y distritos</h2><p>Número de WhatsApp, correo y distritos disponibles en el asistente de cotización.</p></div>
+      </div>
+      <div class="admin-card">
+        <h3>Contacto</h3>
+        <div class="table-row">
+          <div class="row-fields">
+            <div><label>WhatsApp (con código de país, sin +)</label><input type="text" id="contactoWhatsapp"></div>
+            <div><label>Correo</label><input type="text" id="contactoCorreo"></div>
+          </div>
+          <div class="row-fields full">
+            <div><label>Zona de atención</label><input type="text" id="contactoZona"></div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-card">
+        <h3>Distritos (uno por línea)</h3>
+        <textarea id="contactoDistritos" style="width:100%;min-height:220px;padding:12px;border-radius:8px;border:1px solid var(--line);font-family:inherit;"></textarea>
+      </div>
+      <div class="save-bar"><button class="btn btn-primary" id="saveContacto">Guardar contacto y distritos</button></div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/data.js"></script>
+<script src="js/store.js"></script>
+<script src="js/media.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
