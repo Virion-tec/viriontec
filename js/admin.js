@@ -266,11 +266,23 @@
     const url = DATA.contenido?.imagenEquipo || "";
     document.getElementById("equipoImageUrl").value = url;
     VTMedia.mount(document.getElementById("equipoImagePreview"), url, "Vista previa del equipo Virion Tec");
+    const videoUrl = DATA.contenido?.videoPortada || "";
+    document.getElementById("heroVideoUrl").value = videoUrl;
+    setVideoPreview(videoUrl);
   }
+  function setVideoPreview(url) {
+    const video = document.getElementById("heroVideoPreview");
+    video.pause();
+    video.removeAttribute("src");
+    video.innerHTML = "";
+    if (url) { video.src = url; video.load(); }
+  }
+  document.getElementById("heroVideoUrl").addEventListener("input", e => setVideoPreview(e.target.value.trim()));
   document.getElementById("equipoImageUrl").addEventListener("input", e => VTMedia.mount(document.getElementById("equipoImagePreview"), e.target.value, "Vista previa del equipo Virion Tec"));
   document.getElementById("saveGeneral").addEventListener("click", async () => {
     DATA.contenido = DATA.contenido || {};
     DATA.contenido.imagenEquipo = document.getElementById("equipoImageUrl").value.trim();
+    DATA.contenido.videoPortada = document.getElementById("heroVideoUrl").value.trim();
     await saveData("Contenido general guardado.");
   });
 

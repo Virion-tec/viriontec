@@ -4,7 +4,8 @@
 
 const DEFAULT_DATA = {
   contenido: {
-    imagenEquipo: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1000&q=85"
+    imagenEquipo: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1000&q=85",
+    videoPortada: "https://videos.pexels.com/video-files/4974708/4974708-hd_1920_1080_25fps.mp4"
   },
   contacto: {
     whatsapp: "51923976503",

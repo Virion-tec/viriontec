@@ -26,6 +26,14 @@
     document.querySelectorAll(".social-row a").forEach(a => { const key = a.dataset.social; if (social[key]) a.href = social[key]; });
     const equipo = document.getElementById("equipoImagen");
     if (equipo && DATA.contenido?.imagenEquipo) VTMedia.mount(equipo, DATA.contenido.imagenEquipo, "Equipo Virion Tec");
+    const heroVideo = document.querySelector(".hero-video");
+    const heroSource = document.getElementById("heroVideoSource");
+    const videoUrl = DATA.contenido?.videoPortada;
+    if (heroVideo && heroSource && videoUrl && heroSource.getAttribute("src") !== videoUrl) {
+      heroSource.src = videoUrl;
+      heroVideo.load();
+      heroVideo.play().catch(() => {});
+    }
   }
 
   function setupTheme() {
