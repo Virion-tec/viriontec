@@ -2,13 +2,6 @@
 
 (async function () {
   await VTStore.init();
-  const CREDENTIALS_KEY = "vt_admin_credentials";
-  const DEFAULT_CREDENTIALS = { user: "Virion", pass: "p940865067S" };
-  function loadCredentials() {
-    try { return Object.assign({}, DEFAULT_CREDENTIALS, JSON.parse(localStorage.getItem(CREDENTIALS_KEY) || "{}")); }
-    catch { return Object.assign({}, DEFAULT_CREDENTIALS); }
-  }
-  let credentials = loadCredentials();
   let DATA = VTStore.load();
 
   const COLORS = [
@@ -35,13 +28,20 @@
   async function intentarLogin() {
     const user = document.getElementById("loginUser").value.trim();
     const pass = document.getElementById("loginPass").value;
+    if (!VTStore.isRemote()) {
+      document.getElementById("loginError").textContent = "No hay conexión con PostgreSQL. El acceso admin está deshabilitado hasta corregir el despliegue de Railway.";
+      return;
+    }
     try {
       const remote = await VTStore.login(user, pass);
-      if (remote === true || (remote === null && user === credentials.user && pass === credentials.pass)) {
-      sessionStorage.setItem("vt_admin_ok", "1");
-      showApp();
+      if (remote === true) {
+        sessionStorage.setItem("vt_admin_ok", "1");
+        showApp();
       } else {
-      document.getElementById("loginError").textContent = "Usuario o contraseña incorrectos.";
+        const status = VTStore.status();
+        document.getElementById("loginError").textContent = status.adminConfigured
+          ? "Usuario o contraseña incorrectos. Usa las credenciales actuales de Railway/PostgreSQL."
+          : "PostgreSQL está conectado, pero falta crear el admin. Configura ADMIN_USER y ADMIN_PASSWORD en Railway.";
       }
     } catch (error) {
       document.getElementById("loginError").textContent = error.message || "No se pudo iniciar sesión.";
@@ -49,7 +49,7 @@
   }
 
   if (VTStore.isRemote()) VTStore.checkSession().then(ok => { if (ok) showApp(); });
-  else if (sessionStorage.getItem("vt_admin_ok") === "1") showApp();
+  else document.getElementById("loginError").textContent = "El servidor no está conectado a PostgreSQL; los cambios no se sincronizarán entre equipos.";
 
   document.getElementById("logoutBtn").addEventListener("click", async () => {
     await VTStore.logout();
@@ -58,22 +58,16 @@
   });
 
   function renderCredentials() {
-    document.getElementById("adminUserInput").value = credentials.user;
+    document.getElementById("adminUserInput").value = "";
     document.getElementById("adminPassInput").value = "";
   }
   document.getElementById("saveCredentials").addEventListener("click", async () => {
     const user = document.getElementById("adminUserInput").value.trim();
     const pass = document.getElementById("adminPassInput").value;
     if (!user || pass.length < 8) { toast("Ingresa un usuario y una contraseña de al menos 8 caracteres."); return; }
-    if (VTStore.isRemote()) {
-      try { await VTStore.updateCredentials(user, pass); credentials = { user, pass: "" }; renderCredentials(); toast("Credenciales actualizadas en PostgreSQL."); }
-      catch (error) { toast(error.message); }
-      return;
-    }
-    credentials = { user, pass };
-    localStorage.setItem(CREDENTIALS_KEY, JSON.stringify(credentials));
-    renderCredentials();
-    toast("Credenciales actualizadas para este navegador.");
+    if (!VTStore.isRemote()) { toast("Conecta PostgreSQL en Railway antes de cambiar las credenciales."); return; }
+    try { await VTStore.updateCredentials(user, pass); renderCredentials(); toast("Credenciales actualizadas en PostgreSQL."); }
+    catch (error) { toast(error.message); }
   });
 
   /* ---------------- Tabs ---------------- */

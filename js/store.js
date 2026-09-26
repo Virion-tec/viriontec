@@ -3,6 +3,7 @@ const VTStore = (function () {
   const KEY = "viriontec_data";
   const CART_KEY = "viriontec_cart";
   let remoteEnabled = false;
+  let remoteStatus = { database: false, contentConfigured: false, adminConfigured: false };
 
   function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
   function load() {
@@ -20,6 +21,7 @@ const VTStore = (function () {
     try {
       const status = await fetch("/api/status", { credentials: "same-origin", cache: "no-store" });
       const health = status.ok ? await status.json() : null;
+      remoteStatus = health || { database: false, contentConfigured: false, adminConfigured: false };
       remoteEnabled = health?.database === true;
       if (!remoteEnabled) return false;
       const response = await fetch("/api/data", { credentials: "same-origin", cache: "no-store" });
@@ -27,13 +29,14 @@ const VTStore = (function () {
       const data = await response.json();
       if (data && typeof data === "object") localStorage.setItem(KEY, JSON.stringify(data));
       return true;
-    } catch (error) { remoteEnabled = false; console.warn("API PostgreSQL no disponible; se usa la copia local.", error); return false; }
+    } catch (error) { remoteEnabled = false; remoteStatus = { database: false, contentConfigured: false, adminConfigured: false }; console.warn("API PostgreSQL no disponible; se usa la copia local.", error); return false; }
   }
   async function save(data) {
     localStorage.setItem(KEY, JSON.stringify(data));
     if (!remoteEnabled) return { persistent: false };
     const response = await fetch("/api/admin/data", { method: "PUT", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
     if (!response.ok) throw new Error(response.status === 401 ? "La sesión venció. Vuelve a iniciar sesión." : "No se pudieron guardar los cambios en PostgreSQL.");
+    remoteStatus.contentConfigured = true;
     return { persistent: true };
   }
   async function reset() { const data = deepClone(DEFAULT_DATA); await save(data); return data; }
@@ -57,5 +60,5 @@ const VTStore = (function () {
   }
   function getCart() { try { return JSON.parse(localStorage.getItem(CART_KEY) || "[]"); } catch { return []; } }
   function saveCart(cart) { localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
-  return { load, save, reset, init, login, checkSession, logout, updateCredentials, getCart, saveCart, isRemote: () => remoteEnabled };
+  return { load, save, reset, init, login, checkSession, logout, updateCredentials, getCart, saveCart, isRemote: () => remoteEnabled, status: () => Object.assign({}, remoteStatus) };
 })();
