@@ -1,6 +1,7 @@
 /* Virion Tec — Lógica de la página pública */
 
-(function () {
+ (async function () {
+  await VTStore.init();
   const DATA = VTStore.load();
   let cart = VTStore.getCart().filter(id => DATA.combos.some(c => c.id === id && c.activo !== false && c.publico !== false));
   VTStore.saveCart(cart);

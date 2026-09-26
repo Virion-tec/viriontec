@@ -1,4 +1,5 @@
-(function () {
+ (async function () {
+  await VTStore.init();
   const data = VTStore.load();
   const grid = document.getElementById("allCombosGrid");
   const search = document.getElementById("comboSearch");

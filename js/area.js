@@ -1,4 +1,5 @@
-(function () {
+ (async function () {
+  await VTStore.init();
   const data = VTStore.load();
   const key = new URLSearchParams(location.search).get("area");
   const area = data.pilares[key];

@@ -1,7 +1,8 @@
-(function(){
+ (async function(){
+  await VTStore.init();
   const data=VTStore.load(), query=new URLSearchParams(location.search), id=query.get("id"), stored=data.combos.find(c=>c.id===id), root=document.getElementById("comboContent");
   let shared=null;try{shared=JSON.parse(query.get("combo")||"null")}catch{}
-  const combo=stored?.publico===false?null:(shared&&shared.id===id?shared:stored);
+  const combo=stored?.publico===false?null:(stored || (shared && shared.id===id ? shared : null));
   const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   if(!combo||combo.publico===false){root.innerHTML='<div class="combo-notfound"><h1>Este combo no está disponible</h1><p>Puede que haya sido retirado o ya no esté publicado.</p><a class="btn btn-primary" href="combos.html">Ver combos disponibles</a></div>';return;}
   document.title=`${combo.nombre} | Virion Tec`;

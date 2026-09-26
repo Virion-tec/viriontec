@@ -1,9 +1,7 @@
-/* Virion Tec — Panel Administrador
-   Usuario: Virion | Contraseña: p940865067S
-   Nota: esta es una protección simple del lado del cliente, pensada para
-   un panel interno de una MYPE. No reemplaza un backend con autenticación real. */
+/* Virion Tec — Panel Administrador */
 
-(function () {
+(async function () {
+  await VTStore.init();
   const CREDENTIALS_KEY = "vt_admin_credentials";
   const DEFAULT_CREDENTIALS = { user: "Virion", pass: "p940865067S" };
   function loadCredentials() {
@@ -34,20 +32,27 @@
   document.getElementById("loginBtn").addEventListener("click", intentarLogin);
   document.getElementById("loginPass").addEventListener("keydown", (e) => { if (e.key === "Enter") intentarLogin(); });
 
-  function intentarLogin() {
+  async function intentarLogin() {
     const user = document.getElementById("loginUser").value.trim();
     const pass = document.getElementById("loginPass").value;
-    if (user === credentials.user && pass === credentials.pass) {
+    try {
+      const remote = await VTStore.login(user, pass);
+      if (remote === true || (remote === null && user === credentials.user && pass === credentials.pass)) {
       sessionStorage.setItem("vt_admin_ok", "1");
       showApp();
-    } else {
+      } else {
       document.getElementById("loginError").textContent = "Usuario o contraseña incorrectos.";
+      }
+    } catch (error) {
+      document.getElementById("loginError").textContent = error.message || "No se pudo iniciar sesión.";
     }
   }
 
-  if (sessionStorage.getItem("vt_admin_ok") === "1") showApp();
+  if (VTStore.isRemote()) VTStore.checkSession().then(ok => { if (ok) showApp(); });
+  else if (sessionStorage.getItem("vt_admin_ok") === "1") showApp();
 
-  document.getElementById("logoutBtn").addEventListener("click", () => {
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await VTStore.logout();
     sessionStorage.removeItem("vt_admin_ok");
     location.reload();
   });
@@ -56,10 +61,15 @@
     document.getElementById("adminUserInput").value = credentials.user;
     document.getElementById("adminPassInput").value = "";
   }
-  document.getElementById("saveCredentials").addEventListener("click", () => {
+  document.getElementById("saveCredentials").addEventListener("click", async () => {
     const user = document.getElementById("adminUserInput").value.trim();
     const pass = document.getElementById("adminPassInput").value;
     if (!user || pass.length < 8) { toast("Ingresa un usuario y una contraseña de al menos 8 caracteres."); return; }
+    if (VTStore.isRemote()) {
+      try { await VTStore.updateCredentials(user, pass); credentials = { user, pass: "" }; renderCredentials(); toast("Credenciales actualizadas en PostgreSQL."); }
+      catch (error) { toast(error.message); }
+      return;
+    }
     credentials = { user, pass };
     localStorage.setItem(CREDENTIALS_KEY, JSON.stringify(credentials));
     renderCredentials();
@@ -81,6 +91,13 @@
     t.textContent = msg;
     t.classList.add("show");
     setTimeout(() => t.classList.remove("show"), 2200);
+  }
+
+  async function saveData(message) {
+    try {
+      const result = await VTStore.save(DATA);
+      toast(result.persistent ? message : `${message} Solo en este navegador: falta conectar PostgreSQL.`);
+    } catch (error) { toast(error.message); }
   }
 
   /* ================================================================
@@ -152,7 +169,7 @@
     renderCombos();
   });
 
-  document.getElementById("saveCombos").addEventListener("click", () => {
+  document.getElementById("saveCombos").addEventListener("click", async () => {
     const rows = document.querySelectorAll("#combosList .table-row");
     rows.forEach((row, idx) => {
       const combo = DATA.combos[idx];
@@ -166,9 +183,8 @@
       combo.activo = row.querySelector("[data-f=activo]").checked;
       combo.publico = row.querySelector("[data-f=publico]").checked;
     });
-    VTStore.save(DATA);
+    await saveData("Combos guardados en PostgreSQL.");
     renderCombos();
-    toast("Combos guardados. Ya se reflejan en la web pública.");
   });
 
   /* ================================================================
@@ -217,7 +233,7 @@
     wrap.appendChild(line);
   }
 
-  document.getElementById("saveCatalogo").addEventListener("click", () => {
+  document.getElementById("saveCatalogo").addEventListener("click", async () => {
     document.querySelectorAll("#catalogoList .admin-card").forEach((card) => {
       const key = card.dataset.key;
       const cat = DATA.catalogo[key];
@@ -226,8 +242,7 @@
         .map((i) => i.value.trim())
         .filter(Boolean);
     });
-    VTStore.save(DATA);
-    toast("Catálogo guardado. Ya se refleja en la web pública.");
+    await saveData("Catálogo guardado y publicado.");
   });
 
   function renderAreas() {
@@ -259,13 +274,13 @@
     VTMedia.mount(document.getElementById("equipoImagePreview"), url, "Vista previa del equipo Virion Tec");
   }
   document.getElementById("equipoImageUrl").addEventListener("input", e => VTMedia.mount(document.getElementById("equipoImagePreview"), e.target.value, "Vista previa del equipo Virion Tec"));
-  document.getElementById("saveGeneral").addEventListener("click", () => {
+  document.getElementById("saveGeneral").addEventListener("click", async () => {
     DATA.contenido = DATA.contenido || {};
     DATA.contenido.imagenEquipo = document.getElementById("equipoImageUrl").value.trim();
-    VTStore.save(DATA); toast("Contenido general guardado.");
+    await saveData("Contenido general guardado.");
   });
 
-  document.getElementById("saveAreas").addEventListener("click", () => {
+  document.getElementById("saveAreas").addEventListener("click", async () => {
     document.querySelectorAll("#areasList .area-editor").forEach(card => {
       const area = DATA.pilares[card.dataset.key];
       area.titulo = card.querySelector('[data-f="titulo"]').value.trim();
@@ -276,8 +291,7 @@
       DATA.catalogo[card.dataset.key].titulo = area.titulo;
       DATA.catalogo[card.dataset.key].color = area.color;
     });
-    VTStore.save(DATA);
-    toast("Áreas e imágenes guardadas.");
+    await saveData("Áreas e imágenes guardadas.");
   });
 
   /* ================================================================
@@ -290,26 +304,26 @@
     document.getElementById("contactoDistritos").value = DATA.distritos.join("\n");
   }
 
-  document.getElementById("saveContacto").addEventListener("click", () => {
+  document.getElementById("saveContacto").addEventListener("click", async () => {
     DATA.contacto.whatsapp = document.getElementById("contactoWhatsapp").value.replace(/\D/g, "");
     DATA.contacto.correo = document.getElementById("contactoCorreo").value.trim();
     DATA.contacto.zona = document.getElementById("contactoZona").value.trim();
     DATA.distritos = document.getElementById("contactoDistritos").value
       .split("\n").map((d) => d.trim()).filter(Boolean);
-    VTStore.save(DATA);
-    toast("Contacto y distritos guardados.");
+    await saveData("Contacto y distritos guardados.");
   });
 
   /* ---------------- Reset ---------------- */
-  document.getElementById("resetBtn").addEventListener("click", () => {
+  document.getElementById("resetBtn").addEventListener("click", async () => {
     if (!confirm("¿Seguro que quieres restaurar los combos, catálogo y contacto a los valores originales? Esto no se puede deshacer.")) return;
-    DATA = VTStore.reset();
+    try { DATA = await VTStore.reset(); }
+    catch (error) { toast(error.message); return; }
     renderCombos();
     renderCatalogo();
     renderAreas();
     renderGeneral();
     renderContacto();
-    toast("Se restauraron los valores por defecto.");
+    toast(VTStore.isRemote() ? "Valores restaurados en PostgreSQL." : "Restaurado solo en este navegador; falta conectar PostgreSQL.");
   });
 
   /* ---------------- Helpers ---------------- */
