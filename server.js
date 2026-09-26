@@ -40,11 +40,15 @@ async function initializeDatabase() {
   const configuredUser = process.env.ADMIN_USER;
   const configuredPass = process.env.ADMIN_PASSWORD;
   if (configuredUser && configuredPass) {
-    const count = await pool.query("SELECT 1 FROM admin_credentials WHERE id = 1");
-    if (!count.rowCount) {
+    const account = await pool.query("SELECT 1 FROM admin_credentials WHERE id = 1");
+    if (!account.rowCount || process.env.ADMIN_RESET_ON_START === "true") {
       const { salt, key } = await hashPassword(configuredPass);
-      await pool.query("INSERT INTO admin_credentials(id, username, password_salt, password_hash) VALUES(1, $1, $2, $3)", [configuredUser, salt, key]);
+      await pool.query(`INSERT INTO admin_credentials(id, username, password_salt, password_hash) VALUES(1, $1, $2, $3)
+        ON CONFLICT(id) DO UPDATE SET username=EXCLUDED.username, password_salt=EXCLUDED.password_salt, password_hash=EXCLUDED.password_hash, updated_at=now()`, [configuredUser, salt, key]);
+      if (account.rowCount) console.log("Credenciales admin restablecidas desde variables de entorno.");
     }
+  } else {
+    console.warn("Falta ADMIN_USER o ADMIN_PASSWORD: no se puede inicializar la cuenta de administrador.");
   }
   if (process.env.NODE_ENV === "production") {
     app.set("trust proxy", 1);
@@ -57,7 +61,19 @@ async function initializeDatabase() {
   }
 }
 
-app.get("/api/status", (_req, res) => res.json({ database: Boolean(process.env.DATABASE_URL) }));
+app.get("/api/status", async (_req, res) => {
+  try {
+    const [db, content, admin] = await Promise.all([
+      pool.query("SELECT 1"),
+      pool.query("SELECT 1 FROM site_content WHERE id = 1"),
+      pool.query("SELECT 1 FROM admin_credentials WHERE id = 1")
+    ]);
+    res.json({ database: db.rowCount === 1, contentConfigured: content.rowCount === 1, adminConfigured: admin.rowCount === 1 });
+  } catch (error) {
+    console.error("Estado de PostgreSQL no disponible:", error.message);
+    res.status(503).json({ database: false, contentConfigured: false, adminConfigured: false });
+  }
+});
 app.get("/api/data", async (_req, res, next) => {
   try {
     const result = await pool.query("SELECT content FROM site_content WHERE id = 1");

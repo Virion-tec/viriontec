@@ -19,7 +19,8 @@ const VTStore = (function () {
   async function init() {
     try {
       const status = await fetch("/api/status", { credentials: "same-origin", cache: "no-store" });
-      remoteEnabled = status.ok && (await status.json()).database === true;
+      const health = status.ok ? await status.json() : null;
+      remoteEnabled = health?.database === true;
       if (!remoteEnabled) return false;
       const response = await fetch("/api/data", { credentials: "same-origin", cache: "no-store" });
       if (!response.ok) throw new Error("No se pudo leer PostgreSQL.");
